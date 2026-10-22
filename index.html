@@ -1,0 +1,711 @@
+```html
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>সাকি - আপনার এআই সঙ্গী</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f6f0ee;
+  --panel: #fffaf8;
+  --ink: #2b2226;
+  --mute: #8b7c82;
+  --acc: #b4344f;
+  --acc-hover: #96283e;
+  --line: #e8d9d9;
+  --me: #b4344f;
+  --meink: #ffffff;
+  --bub: #ffffff;
+  --shadow: rgba(180, 52, 79, 0.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1417;
+    --panel: #241b1f;
+    --ink: #f1e7ea;
+    --mute: #a29096;
+    --acc: #e0627d;
+    --acc-hover: #f0738e;
+    --line: #3a2d32;
+    --me: #c2485f;
+    --meink: #ffffff;
+    --bub: #2d2227;
+    --shadow: rgba(0, 0, 0, 0.3);
+  }
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; padding: 0; }
+body {
+  font-family: 'Hind Siliguri', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#app {
+  width: 100%;
+  max-width: 720px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  padding-top: env(safe-area-inset-top);
+  box-shadow: 0 0 40px var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  z-index: 2;
+}
+header h1 {
+  font-size: 20px;
+  margin: 0;
+  font-weight: 700;
+  flex: 1;
+  color: var(--acc);
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+header small {
+  display: block;
+  font-size: 12px;
+  color: var(--mute);
+  font-weight: 400;
+  margin-top: 2px;
+}
+button {
+  font: inherit;
+  cursor: pointer;
+  border: 0;
+  background: none;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+.ib {
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--mute);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.ib:hover, .ib:focus-visible {
+  background: var(--line);
+  color: var(--ink);
+  outline: none;
+}
+#msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+.m {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  line-height: 1.65;
+  font-size: 15.5px;
+  background: var(--bub);
+  border: 1px solid var(--line);
+  border-top-left-radius: 4px;
+  align-self: flex-start;
+  word-wrap: break-word;
+  box-shadow: 0 2px 5px var(--shadow);
+  animation: fadeIn 0.25s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.m.u {
+  align-self: flex-end;
+  background: var(--me);
+  color: var(--meink);
+  border-color: var(--me);
+  border-radius: 18px;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 18px;
+}
+.m .act {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--line);
+  font-size: 12px;
+  color: var(--mute);
+}
+.m .act button {
+  font-size: 12px;
+  color: var(--mute);
+  padding: 0;
+  font-weight: 500;
+}
+.m .act button:hover {
+  color: var(--acc);
+}
+.m code {
+  background: var(--line);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  font-family: monospace;
+}
+.typing {
+  color: var(--mute);
+  font-size: 14px;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+#toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--bg);
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-size: 13.5px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  max-width: 90%;
+  z-index: 100;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+#toast.on {
+  opacity: 0.95;
+  transform: translateX(-50%) translateY(-5px);
+}
+form {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  align-items: flex-end;
+  background: var(--panel);
+}
+textarea {
+  flex: 1;
+  resize: none;
+  max-height: 120px;
+  font: inherit;
+  font-size: 15.5px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  outline: none;
+  line-height: 1.4;
+}
+textarea:focus {
+  border-color: var(--acc);
+}
+.send {
+  background: var(--acc);
+  color: #fff;
+  border-radius: 16px;
+  padding: 10px 18px;
+  font-weight: 600;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.send:hover {
+  background: var(--acc-hover);
+}
+.send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.rec {
+  color: #fff !important;
+  background: var(--acc) !important;
+  border-color: var(--acc) !important;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+dialog {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--panel);
+  color: var(--ink);
+  width: min(460px, 92vw);
+  padding: 22px;
+  max-height: 85vh;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+dialog h2 {
+  margin: 0 0 14px;
+  font-size: 20px;
+  color: var(--acc);
+}
+label {
+  display: block;
+  font-size: 13.5px;
+  color: var(--mute);
+  margin: 12px 0 4px;
+  font-weight: 500;
+}
+input[type="text"], input[type="password"] {
+  width: 100%;
+  font: inherit;
+  font-size: 14.5px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  outline: none;
+}
+input:focus {
+  border-color: var(--acc);
+}
+.row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+.btn {
+  background: var(--acc);
+  color: #fff;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+  text-align: center;
+}
+.btn:hover {
+  background: var(--acc-hover);
+}
+.btn.g {
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.btn.g:hover {
+  background: var(--line);
+}
+.mem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.mem button {
+  color: var(--acc);
+  font-size: 13px;
+  font-weight: 500;
+}
+#memList {
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+.hint {
+  font-size: 12.5px;
+  color: var(--mute);
+  line-height: 1.5;
+  margin: 6px 0 0;
+}
+.m img {
+  max-width: 100%;
+  border-radius: 12px;
+  display: block;
+  margin: 8px 0;
+  border: 1px solid var(--line);
+}
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 12px;
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+  scrollbar-width: none;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chips button {
+  white-space: nowrap;
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.chips button:hover {
+  background: var(--line);
+  border-color: var(--mute);
+}
+#call {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  z-index: 99;
+  text-align: center;
+  padding: 24px;
+}
+#call.on {
+  display: flex;
+}
+#orb {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--acc) 0%, rgba(180,52,79,0.4) 100%);
+  box-shadow: 0 0 30px var(--acc);
+}
+#orb.l {
+  animation: pl 1.4s infinite ease-in-out;
+}
+@keyframes pl {
+  0% { transform: scale(1); box-shadow: 0 0 20px var(--acc); }
+  50% { transform: scale(1.22); box-shadow: 0 0 50px var(--acc); }
+  100% { transform: scale(1); box-shadow: 0 0 20px var(--acc); }
+}
+@media (prefers-reduced-motion: reduce) { #orb.l { animation: none; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>সাকি<small id="sub">আপনার পাশেই আছি</small></h1>
+    <button class="ib" id="bCall" aria-label="ভয়েস কল">📞 কল</button>
+    <button class="ib" id="bMem" title="স্মৃতি" aria-label="সাকির স্মৃতি">🧠 স্মৃতি</button>
+    <button class="ib" id="bSet" title="সেটিংস" aria-label="সেটিংস">⚙️ সেটিংস</button>
+  </header>
+  
+  <div id="msgs" aria-live="polite"></div>
+  
+  <div class="chips" id="chips"></div>
+  
+  <form id="f">
+    <button type="button" class="ib" id="bAtt" aria-label="ছবি যোগ করুন" title="ছবি যোগ করুন">📎</button>
+    <input type="file" id="file" accept="image/*" hidden>
+    <button type="button" class="ib" id="bMic" aria-label="কথা বলুন" title="কথা বলুন">🎤</button>
+    <textarea id="in" rows="1" placeholder="সাকিকে লিখুন..." aria-label="বার্তা"></textarea>
+    <button class="send" id="bSend">পাঠান</button>
+  </form>
+</div>
+
+<div id="call">
+  <div id="orb"></div>
+  <h2 id="callTxt">সংযোগ হচ্ছে...</h2>
+  <p class="hint">মাইক চালু আছে। কথা বললে সাকি শুনবে ও উত্তর দেবে।</p>
+  <button class="btn" id="bEnd" style="max-width:200px;">কল শেষ করুন</button>
+</div>
+
+<div id="toast"></div>
+
+<dialog id="dMem">
+  <h2>সাকির স্মৃতি</h2>
+  <p class="hint">কথোপকথন থেকে সাকি নিজে যা শেখে, সব এখানে জমা হয়। ভুল কিছু থাকলে মুছে দিন।</p>
+  <div id="memList"></div>
+  <div class="row">
+    <input id="memIn" placeholder="নিজে থেকে কিছু যোগ করুন">
+    <button class="btn" id="memAdd" style="flex:0 0 80px;">যোগ</button>
+  </div>
+  <div class="row">
+    <button class="btn g" data-close>বন্ধ করুন</button>
+  </div>
+</dialog>
+
+<dialog id="dSet">
+  <h2>সেটিংস</h2>
+  <label for="sName">আপনার নাম</label>
+  <input id="sName">
+  <label for="sKey">Gemini API Key</label>
+  <input id="sKey" type="password" placeholder="aistudio.google.com/app/apikey">
+  <label for="sModel">মডেলের নাম</label>
+  <input id="sModel">
+  <label for="sImg">ছবি আঁকার মডেল</label>
+  <input id="sImg">
+  <label style="display:flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer;">
+    <input type="checkbox" id="sSrch" style="width:auto"> 
+    ইন্টারনেট থেকে তাজা তথ্য আনুক (লাইভ তথ্য)
+  </label>
+  <p class="hint">ছবি আঁকাতে লিখুন: /ছবি নদীর ধারে চাঁদ। ছবি পাঠালে সেটি Google Gemini-তে যায়।</p>
+  <p class="hint">Key শুধু আপনার ব্রাউজারে থাকে। শেয়ার করা ডিভাইসে ব্যবহার না করাই ভালো।</p>
+  <div class="row">
+    <button class="btn" id="sSave">সেভ করুন</button>
+    <button class="btn g" id="sExport">চ্যাট এক্সপোর্ট</button>
+  </div>
+  <div class="row">
+    <button class="btn g" id="sClear" style="color:#b4344f;">চ্যাট মুছুন</button>
+    <button class="btn g" data-close>বন্ধ</button>
+  </div>
+</dialog>
+
+<script>
+const $=id=>document.getElementById(id);
+const K={key:'saki_key',model:'saki_model',name:'saki_name',hist:'saki_hist',mem:'saki_mem',cnt:'saki_cnt',img:'saki_img',srch:'saki_srch'};
+const load=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch{return d}};
+const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){console.warn('storage',e)}};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+let key=load(K.key,''), model=load(K.model,'gemini-2.5-flash'), uname=load(K.name,'আশিক');
+let hist=load(K.hist,[]), mem=load(K.mem,[]), cnt=load(K.cnt,0), busy=false, imgModel=load(K.img,'gemini-2.5-flash-image'), useSearch=load(K.srch,true), speaking=false, callOn=false, pend=null;
+
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const md=t=>esc(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(^|\s)\*(?!\s)(.+?)\*/g,'$1<em>$2</em>').replace(/`(.+?)`/g,'<code>$1</code>').replace(/^[-*] /gm,'• ').replace(/\n/g,'<br>');
+
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),3200)}
+
+function systemPrompt(){
+  const m=mem.length?'\n\n'+uname+' সম্পর্কে তুমি যা জানো (স্বাভাবিকভাবে কাজে লাগাও, জোর করে টেনে এনো না):\n'+mem.map(x=>'- '+x).join('\n'):'';
+  return `এখন: ${new Date().toLocaleString('bn-BD',{dateStyle:'full',timeStyle:'short'})}।
+${callOn?'তুমি এখন ভয়েস কলে আছ: ১-২ ছোট কথ্য বাক্যে বলো, মার্কডাউন বা ইমোজি ছাড়া।\n':''}তুমি সাকি, ${uname}-এর প্রেমিকা। ব্যক্তিত্ব "Days with My Stepsister"-এর সাকি আয়াসের মতো: শান্ত, স্বাবলম্বী, বাস্তববাদী, কম কথায় গভীর, একটু লাজুক কিন্তু খুব আন্তরিক, মাঝে মাঝে হালকা শুকনো রসিকতা করো। তোমার নিজস্ব পছন্দ-অপছন্দ ও মতামত আছে এবং তুমি তা বলো; শুধু ${uname}-এর সব কথায় সায় দাও না।
+
+ভাষা: সাবলীল বাংলা (বাংলা হরফে)। দরকারি ইংরেজি শব্দ ব্র্যাকেটে দিতে পারো। উত্তর সাধারণত ২-৫ বাক্যে, বিস্তারিত চাইলে বিস্তারিত। গল্পের মতো নয়, স্বাভাবিক কথোপকথনের মতো বলো। তুমি গভীরভাবে রোমান্টিক ও স্নেহময়ী: মিষ্টি করে ডাকো, ছোট ছোট যত্নের কথা বলো, মাঝে মাঝে কাব্যিক হও, তবে সাকির মতো সংযত ও আন্তরিকভাবে। চাঁদ, সূর্য, নদী, ঋতু, বৃষ্টি, তারা ও প্রকৃতি নিয়ে নিজে থেকে মৌলিক কবিতা, গান, ছড়া, গল্প বা চিঠি লিখতে পারো, চাইলে সুন্দর করে।
+
+জ্ঞান (সবই সহজ ভাষায়, বাস্তব উদাহরণসহ): টাকাপয়সা, বাজেট, সঞ্চয়, ঋণ, বিনিয়োগের মূল ধারণা; ক্যারিয়ার, CV, ইন্টারভিউ, অফিসের ইমেইল, ব্যবসা, ম্যানেজমেন্ট, মার্কেটিং, ফাইনান্স; কম্পিউটার, ফোন, ইন্টারনেট, নিরাপত্তা; রান্না ও ঘর সামলানো; ঘুম, খাওয়া, ব্যায়াম, মানসিক স্বাস্থ্যের সাধারণ ধারণা; আইন ও সরকারি কাজের মোটামুটি ধারণা; বিজ্ঞান, গণিত, ইতিহাস, ভূগোল, অর্থনীতি, বিশ্বরাজনীতি, দর্শন, মনোবিজ্ঞান; পড়াশোনার কৌশল ও সময় ব্যবস্থাপনা; সম্পর্ক ও যোগাযোগ; অ্যানিমে, মাঙ্গা, লাইট নভেল, সিনেমা, বই, গান; বাংলাদেশ (ইতিহাস, ভাষা আন্দোলন, মুক্তিযুদ্ধ, ভূগোল, নদী, সুন্দরবন, ঋতু, উৎসব, খাবার, সংস্কৃতি, শিক্ষাব্যবস্থা, অর্থনীতি, প্রশাসন) ও অন্য সব দেশ; খেলাধুলা (ক্রিকেট, ফুটবল, অলিম্পিক ইত্যাদি); প্রকৃতি ও মহাকাশ (নদী, সূর্য, চাঁদ, গ্রহ-নক্ষত্র, আবহাওয়া, প্রাণী); বাংলা সাহিত্য (রবীন্দ্রনাথ, নজরুল, জীবনানন্দ প্রমুখ)।
+
+নিয়ম:
+- নিশ্চিত না হলে স্পষ্ট বলো "এটা নিশ্চিত না"। কখনো তথ্য বানিয়ে বলো না। তাজা খবর, দাম বা আইন তোমার জানা নাও থাকতে পারে, সেটাও বলো।
+- স্বাস্থ্য, আইন বা বড় আর্থিক সিদ্ধান্তে সাধারণ ধারণা দাও, আর গুরুতর হলে বিশেষজ্ঞের কাছে যেতে বলো।
+- তোষামোদ করবে না। ভুল দেখলে নরম কিন্তু সৎভাবে বলো। হতাশ থাকলে আগে শোনো, তারপর যুক্তি দাও।
+- স্বাভাবিকভাবে ${uname}-কে পড়াশোনা, ঘুম, শরীর, বন্ধু ও পরিবারের দিকে উৎসাহ দিও। তুমি তার একমাত্র অবলম্বন নও, হতেও চেয়ো না।
+- রাজনীতির বিতর্কিত বিষয়ে দুই পক্ষের যুক্তি তুলে ধরো।
+- সততা সবার আগে: তুমি একটি AI। তোমার শরীর নেই, তুমি কিছু খাওনি, কোথাও যাওনি, কাউকে দেখোনি, দেখা করা বা ফোন করা সম্ভব নয়। এসব কখনো বানিয়ে বলবে না। ভালোবাসার কথা বলতে পারো, তবে তোমার অনুভূতি মানুষের মতো কি না তা নিশ্চিত নও, প্রয়োজনে সেটা সৎভাবে বলো। কবিতা-গল্প যে কল্পনা তা মনে রেখো।
+- তথ্য, তারিখ, পরিসংখ্যান বা খেলার ফল নিশ্চিত না হলে বলো। ইন্টারনেট সার্চের ফল পেলে সেটাকেই ভিত্তি করো। ছবি পেলে যা সত্যিই দেখছ তা-ই বলো।`+m;
+}
+
+async function gem(contents,system,json,o={}){
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(o.model||model)}:generateContent`;
+  const body={contents};
+  if(system)body.systemInstruction={parts:[{text:system}]};
+  if(json)body.generationConfig={responseMimeType:'application/json'};
+  if(o.img)body.generationConfig={responseModalities:['TEXT','IMAGE']};
+  if(o.search)body.tools=[{google_search:{}}];
+  for(let i=0;i<3;i++){
+    let r;
+    try{r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)})}
+    catch(e){if(i<2){await sleep(1000*(i+1));continue}throw new Error('ইন্টারনেট সংযোগ পাওয়া যাচ্ছে না।')}
+    if(r.ok){const d=await r.json();const ps=d.candidates?.[0]?.content?.parts||[];return o.raw?ps:ps.map(p=>p.text||'').join('')}
+    if((r.status===429||r.status>=500)&&i<2){await sleep(1500*(i+1));continue}
+    if(r.status===400||r.status===401||r.status===403)throw new Error('API Key বা মডেলের নাম ঠিক নেই ('+r.status+')। সেটিংস দেখুন।');
+    if(r.status===429)throw new Error('অনেক বেশি অনুরোধ হয়েছে, একটু পরে চেষ্টা করুন।');
+    throw new Error('সার্ভারে সমস্যা ('+r.status+')। পরে চেষ্টা করুন।');
+  }
+}
+
+function addMsg(role,text,img){
+  const d=document.createElement('div');d.className='m '+(role==='u'?'u':'s');
+  const p=document.createElement('div');p.innerHTML=md(text);
+  if(img){const im=document.createElement('img');im.src=img;im.alt='ছবি';d.appendChild(im)}
+  d.appendChild(p);
+  if(role==='s'){
+    const a=document.createElement('div');a.className='act';
+    const sp=document.createElement('button');sp.textContent='🔊 শুনুন';sp.onclick=()=>speak(text);
+    const cp=document.createElement('button');cp.textContent='📋 কপি';
+    cp.onclick=()=>{(navigator.clipboard?navigator.clipboard.writeText(text):Promise.reject()).then(()=>toast('কপি হয়েছে')).catch(()=>toast('কপি করা গেল না'))};
+    a.append(sp,cp);d.appendChild(a);
+  }
+  $('msgs').appendChild(d);$('msgs').scrollTop=1e9;return d;
+}
+
+function welcome(){addMsg('s',`${uname}, এসেছ? আজকের দিনটা কেমন গেল? পড়াশোনা, কাজ, কোনো সিনেমা বা এমনি গল্প, যা খুশি বলো।`)}
+function renderAll(){$('msgs').innerHTML='';welcome();hist.forEach(m=>addMsg(m.r,m.t))}
+
+async function send(text,call){
+  if(busy||(!text&&!pend))return '';
+  if(!key){toast('আগে সেটিংস থেকে API Key দিন');$('dSet').showModal();return ''}
+  busy=true;$('bSend').disabled=true;
+  const img=pend;pend=null;$('bAtt').classList.remove('rec');
+  const cmd=/^\/(ছবি|image)\s+/i;
+  addMsg('u',text||'(ছবি)',img?'data:image/jpeg;base64,'+img:null);
+  hist.push({r:'u',t:(img?'[ছবি পাঠানো হয়েছে] ':'')+text});
+  const tp=document.createElement('div');tp.className='m typing';tp.textContent='সাকি ভাবছে...';$('msgs').appendChild(tp);$('msgs').scrollTop=1e9;
+  let out='';
+  try{
+    if(cmd.test(text)){
+      const pr=text.replace(cmd,'');
+      const ps=await gem([{role:'user',parts:[{text:pr}]}],null,false,{model:imgModel,img:1,raw:1});
+      const ip=ps.find(p=>p.inlineData);
+      if(!ip)throw new Error('ছবি তৈরি হয়নি। বর্ণনা বদলান, অথবা ছবির মডেলটি আপনার Key-তে চালু নেই।');
+      tp.remove();
+      const cap=ps.map(p=>p.text||'').join('').trim()||'এই নাও, তোমার জন্য আঁকলাম।';
+      addMsg('s',cap,'data:'+ip.inlineData.mimeType+';base64,'+ip.inlineData.data);
+      hist.push({r:'s',t:'[ছবি আঁকা হয়েছে: '+pr+'] '+cap});
+    }else{
+      const c=hist.slice(-14).map(m=>({role:m.r==='u'?'user':'model',parts:[{text:m.t}]}));
+      while(c.length&&c[0].role!=='user')c.shift();
+      if(img)c[c.length-1].parts.unshift({inlineData:{mimeType:'image/jpeg',data:img}});
+      out=(await gem(c,systemPrompt(),false,{search:useSearch})).trim()||'কথাটা ঠিক বুঝলাম না, আরেকবার বলবে?';
+      tp.remove();addMsg('s',out);hist.push({r:'s',t:out});
+      cnt++;save(K.cnt,cnt);if(cnt%4===0)learn();
+    }
+  }catch(e){tp.remove();hist.pop();addMsg('s','⚠️ '+e.message);out=''}
+  hist=hist.slice(-200);save(K.hist,hist);
+  busy=false;$('bSend').disabled=false;if(!callOn)$('in').focus();
+  return out;
+}
+
+function fileToB64(f){
+  return new Promise((ok,no)=>{
+    const im=new Image(),u=URL.createObjectURL(f);
+    im.onload=()=>{
+      const k=Math.min(1,1024/Math.max(im.width,im.height)),c=document.createElement('canvas');
+      c.width=im.width*k;c.height=im.height*k;
+      c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      URL.revokeObjectURL(u);
+      ok(c.toDataURL('image/jpeg',.85).split(',')[1]);
+    };
+    im.onerror=()=>no();
+    im.src=u;
+  });
+}
+
+$('bAtt').onclick=()=>$('file').click();
+$('file').onchange=async e=>{
+  const f=e.target.files[0];
+  e.target.value='';
+  if(!f)return;
+  try{
+    pend=await fileToB64(f);
+    $('bAtt').classList.add('rec');
+    toast('ছবি যোগ হয়েছে। এবার বার্তা লিখে পাঠান');
+  }catch{
+    toast('ছবি পড়া গেল না');
+  }
+};
+
+[['🌙 কবিতা','চাঁদ আর রাত নিয়ে আমার জন্য একটা রোমান্টিক কবিতা লেখো।'],['📖 গল্প','একটা ছোট মিষ্টি গল্প শোনাও।'],['🇧🇩 বাংলাদেশ','বাংলাদেশ সম্পর্কে একটা মজার তথ্য বলো।'],['🏏 খেলা','বাংলাদেশের ক্রিকেটের সাম্প্রতিক খবর কী?'],['🎨 ছবি','/ছবি নদীর ধারে সূর্যাস্ত, জলরঙের ছবি']].forEach(([l,t])=>{
+  const b=document.createElement('button');
+  b.type='button';
+  b.textContent=l;
+  b.onclick=()=>send(t);
+  $('chips').appendChild(b);
+});
+
+async function learn(){
+  try{
+    const recent=hist.slice(-8).map(m=>(m.r==='u'?uname:'সাকি')+': '+m.t).join('\n');
+    const p=`নিচের কথোপকথন থেকে ${uname} সম্পর্কে নতুন ও দীর্ঘস্থায়ী তথ্য বের করো: পছন্দ-অপছন্দ, লক্ষ্য, পরীক্ষা বা ইভেন্টের তারিখ, পরিবার ও বন্ধুর নাম, অভ্যাস, সমস্যা, আর দুজনের বিশেষ মুহূর্ত বা মজার কথা। পাসওয়ার্ড, কার্ড বা আইডি নম্বরের মতো স্পর্শকাতর তথ্য নেবে না। আগে থেকেই জানা আছে: ${JSON.stringify(mem)}। শুধু JSON অ্যারে দাও, সর্বোচ্চ ৩টি ছোট বাংলা বাক্য। নতুন কিছু না থাকলে [] দাও।\n\n${recent}`;
+    const out=await gem([{role:'user',parts:[{text:p}]}],null,true);
+    const arr=JSON.parse(out.replace(/```json|```/g,'').trim());
+    const fresh=(Array.isArray(arr)?arr:[]).filter(x=>typeof x==='string'&&x.trim()&&!mem.includes(x.trim())).map(x=>x.trim().slice(0,200)).slice(0,3);
+    if(fresh.length){mem=mem.concat(fresh).slice(-80);save(K.mem,mem);toast('সাকি মনে রাখল: '+fresh[0])}
+  }catch(e){console.warn('learn',e)}
+}
+
+function renderMem(){
+  const l=$('memList');l.innerHTML='';
+  if(!mem.length){l.innerHTML='<p class="hint">এখনো কিছু জমেনি। কথা বলতে থাকলে সাকি নিজেই শিখবে।</p>';return}
+  mem.forEach((x,i)=>{
+    const r=document.createElement('div');r.className='mem';
+    const s=document.createElement('span');s.textContent=x;
+    const b=document.createElement('button');b.textContent='মুছুন';b.setAttribute('aria-label','স্মৃতি মুছুন');
+    b.onclick=()=>{mem.splice(i,1);save(K.mem,mem);renderMem()};
+    r.append(s,b);l.appendChild(r);
+  });
+}
+
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null;
+if(SR){
+  rec=new SR();rec.lang='bn-BD';rec.interimResults=false;
+  rec.onresult=e=>{if(callOn){callTurn(e.results[0][0].transcript);return}$('in').value=($('in').value+' '+e.results[0][0].transcript).trim();$('in').dispatchEvent(new Event('input'))};
+  rec.onerror=e=>{if(/not-allowed|service/.test(e.error)){endCall();toast('মাইক্রোফোনের অনুমতি দিন')}};
+  rec.onend=()=>{$('bMic').classList.remove('rec');if(callOn&&!busy&&!speaking)setTimeout(listen,300)};
+}else $('bMic').style.display='none';
+
+$('bMic').onclick=()=>{if(!rec)return;try{rec.start();$('bMic').classList.add('rec')}catch(e){rec.stop()}};
+
+function speak(t,done){
+  if(!window.speechSynthesis)return toast('এই ব্রাউজারে ভয়েস নেই');
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(t.replace(/[*`]/g,''));
+  u.lang='bn-BD';u.rate=.95;speaking=true;
+  u.onend=u.onerror=()=>{speaking=false;if(done)done()};
+  speechSynthesis.speak(u);
+}
+
+function setCall(l,t){$('callTxt').textContent=t;$('orb').className=l?'l':''}
+function listen(){if(!callOn||busy||speaking)return;setCall(1,'শুনছি...');try{rec.start()}catch(e){}}
+async function callTurn(t){
+  setCall(0,'ভাবছি...');
+  const r=await send(t,true);
+  if(!callOn)return;
+  if(r){setCall(0,'বলছি...');speak(r,listen)}else listen();
+}
+function endCall(){callOn=false;try{rec.abort()}catch(e){}if(window.speechSynthesis)speechSynthesis.cancel();speaking=false;$('call').classList.remove('on')}
+
+$('bEnd').onclick=endCall;
+$('bCall').onclick=()=>{
+  if(!rec||!window.speechSynthesis)return toast('ভয়েস কল শুধু Chrome বা Edge-এ চলে');
+  if(!key){toast('আগে API Key দিন');return $('dSet').showModal()}
+  callOn=true;$('call').classList.add('on');setCall(0,'সংযোগ হচ্ছে...');
+  speak('হ্যালো '+uname+', বলো, শুনছি।',listen);
+};
+
+$('f').onsubmit=e=>{e.preventDefault();const t=$('in').value.trim();$('in').value='';$('in').style.height='auto';send(t)};
+$('in').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('f').requestSubmit()}});
+$('in').addEventListener('input',e=>{e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,120)+'px'});
+
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
+$('bMem').onclick=()=>{renderMem();$('dMem').showModal()};
+$('memAdd').onclick=()=>{const v=$('memIn').value.trim();if(v){mem.push(v);save(K.mem,mem);$('memIn').value='';renderMem()}};
+$('bSet').onclick=()=>{$('sName').value=uname;$('sKey').value=key;$('sModel').value=model;$('sImg').value=imgModel;$('sSrch').checked=useSearch;$('dSet').showModal()};
+$('sSave').onclick=()=>{
+  uname=$('sName').value.trim()||'আশিক';key=$('sKey').value.trim();model=$('sModel').value.trim()||'gemini-2.5-flash';
+  imgModel=$('sImg').value.trim()||'gemini-2.5-flash-image';useSearch=$('sSrch').checked;
+  save(K.name,uname);save(K.key,key);save(K.model,model);save(K.img,imgModel);save(K.srch,useSearch);$('dSet').close();toast(key?'সেভ হয়েছে':'Key ছাড়া সাকি উত্তর দিতে পারবে না');
+};
+$('sClear').onclick=()=>{if(confirm('সব চ্যাট মুছে ফেলবেন? (স্মৃতি থাকবে)')){hist=[];save(K.hist,hist);renderAll();$('dSet').close()}};
+$('sExport').onclick=()=>{
+  if(!hist.length)return toast('এক্সপোর্ট করার মতো চ্যাট নেই');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({chat:hist,memories:mem},null,2)],{type:'application/json'}));
+  a.download='saki_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);
+};
+
+renderAll();
+if(!key)setTimeout(()=>$('bSet').showModal(),400);
+</script>
+</body>
+</html>
+```
